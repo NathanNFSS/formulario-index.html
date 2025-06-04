@@ -1,46 +1,316 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Olá, mundo!</title>
-
-    <!-- Bootstrap CSS (Versão mais recente) -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-  </head>
-  <body>
-    <div class="container">
-      <div class="row">
-        <div class="col">
-          <p>Primeira Linha</p>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+        
+        .calculator {
+            position: relative;
+            width: 340px;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .calculator .display {
+            position: relative;
+            width: 100%;
+            height: 100px;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            text-align: right;
+            overflow: hidden;
+        }
+        
+        .calculator .display .previous-operand {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.2rem;
+            height: 30px;
+            overflow: hidden;
+        }
+        
+        .calculator .display .current-operand {
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 500;
+        }
+        
+        .calculator .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-gap: 15px;
+        }
+        
+        .calculator .buttons button {
+            height: 70px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .calculator .buttons button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .calculator .buttons button:active {
+            transform: translateY(0);
+        }
+        
+        .calculator .buttons .operator {
+            background: rgba(255, 166, 0, 0.3);
+        }
+        
+        .calculator .buttons .equals {
+            background: rgba(76, 175, 80, 0.4);
+            grid-column: span 2;
+        }
+        
+        .calculator .buttons .clear, 
+        .calculator .buttons .delete {
+            background: rgba(244, 67, 54, 0.4);
+        }
+        
+        @media (max-width: 400px) {
+            .calculator {
+                width: 90%;
+            }
+            
+            .calculator .buttons button {
+                height: 60px;
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="display">
+            <div class="previous-operand" id="previous-operand"></div>
+            <div class="current-operand" id="current-operand">0</div>
         </div>
-      </div>
-      <div class="row">
-        <div class="col-sm">
-          <h1>Olá, mundo!</h1>
-
-          <!-- Botões -->
-          <button type="button" class="btn btn-warning">Warning</button>
-          <button type="button" class="btn btn-info">Info</button>
-          <button type="button" class="btn btn-light">Light</button>
-          <button type="button" class="btn btn-dark">Dark</button>
-          <button type="button" class="btn btn-link">Link</button>
+        <div class="buttons">
+            <button class="clear" data-action="clear">AC</button>
+            <button class="delete" data-action="delete">DEL</button>
+            <button class="operator" data-action="percentage">%</button>
+            <button class="operator" data-operation="/">÷</button>
+            
+            <button data-number="7">7</button>
+            <button data-number="8">8</button>
+            <button data-number="9">9</button>
+            <button class="operator" data-operation="*">×</button>
+            
+            <button data-number="4">4</button>
+            <button data-number="5">5</button>
+            <button data-number="6">6</button>
+            <button class="operator" data-operation="-">-</button>
+            
+            <button data-number="1">1</button>
+            <button data-number="2">2</button>
+            <button data-number="3">3</button>
+            <button class="operator" data-operation="+">+</button>
+            
+            <button data-number="0">0</button>
+            <button data-number=".">.</button>
+            <button class="equals" data-action="equals">=</button>
         </div>
-        <div class="col-sm">
-          <div class="alert alert-primary" role="alert">
-            Um simples alerta primary. Olha só!
-          </div>
-        </div>
-        <div class="col-sm">
-          <button type="button" class="btn btn-primary">Primary</button>
-          <button type="button" class="btn btn-secondary">Secondary</button>
-          <button type="button" class="btn btn-success">Success</button>
-          <button type="button" class="btn btn-danger">Danger</button>
-        </div>
-      </div>
     </div>
 
-    <!-- Bootstrap JS (Removido jQuery) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  </body>
+    <script>
+        class Calculator {
+            constructor(previousOperandTextElement, currentOperandTextElement) {
+                this.previousOperandTextElement = previousOperandTextElement;
+                this.currentOperandTextElement = currentOperandTextElement;
+                this.clear();
+            }
+            
+            clear() {
+                this.currentOperand = '0';
+                this.previousOperand = '';
+                this.operation = undefined;
+                this.updateDisplay();
+            }
+            
+            delete() {
+                if (this.currentOperand === '0') return;
+                
+                this.currentOperand = this.currentOperand.toString().slice(0, -1);
+                
+                if (this.currentOperand === '') {
+                    this.currentOperand = '0';
+                }
+                
+                this.updateDisplay();
+            }
+            
+            appendNumber(number) {
+                if (number === '.' && this.currentOperand.includes('.')) return;
+                
+                if (this.currentOperand === '0' && number !== '.') {
+                    this.currentOperand = number.toString();
+                } else {
+                    this.currentOperand = this.currentOperand.toString() + number.toString();
+                }
+                
+                this.updateDisplay();
+            }
+            
+            chooseOperation(operation) {
+                if (this.currentOperand === '0' && this.previousOperand !== '') {
+                    this.operation = operation;
+                    this.updateDisplay();
+                    return;
+                }
+                
+                if (this.currentOperand === '0') return;
+                
+                if (this.previousOperand !== '') {
+                    this.compute();
+                }
+                
+                this.operation = operation;
+                this.previousOperand = this.currentOperand;
+                this.currentOperand = '0';
+                this.updateDisplay();
+            }
+            
+            compute() {
+                let computation;
+                const prev = parseFloat(this.previousOperand);
+                const current = parseFloat(this.currentOperand);
+                
+                if (isNaN(prev) || isNaN(current)) return;
+                
+                switch (this.operation) {
+                    case '+':
+                        computation = prev + current;
+                        break;
+                    case '-':
+                        computation = prev - current;
+                        break;
+                    case '*':
+                        computation = prev * current;
+                        break;
+                    case '/':
+                        computation = prev / current;
+                        break;
+                    case '%':
+                        computation = prev % current;
+                        break;
+                    default:
+                        return;
+                }
+                
+                this.currentOperand = computation.toString();
+                this.operation = undefined;
+                this.previousOperand = '';
+                this.updateDisplay();
+            }
+            
+            percentage() {
+                if (this.currentOperand === '0') return;
+                
+                const current = parseFloat(this.currentOperand);
+                this.currentOperand = (current / 100).toString();
+                this.updateDisplay();
+            }
+            
+            updateDisplay() {
+                this.currentOperandTextElement.innerText = this.currentOperand;
+                
+                if (this.operation != null) {
+                    this.previousOperandTextElement.innerText = 
+                        `${this.previousOperand} ${this.operation}`;
+                } else {
+                    this.previousOperandTextElement.innerText = '';
+                }
+            }
+        }
+        
+        const numberButtons = document.querySelectorAll('[data-number]');
+        const operationButtons = document.querySelectorAll('[data-operation]');
+        const equalsButton = document.querySelector('[data-action="equals"]');
+        const clearButton = document.querySelector('[data-action="clear"]');
+        const deleteButton = document.querySelector('[data-action="delete"]');
+        const percentageButton = document.querySelector('[data-action="percentage"]');
+        const previousOperandTextElement = document.getElementById('previous-operand');
+        const currentOperandTextElement = document.getElementById('current-operand');
+        
+        const calculator = new Calculator(previousOperandTextElement, currentOperandTextElement);
+        
+        numberButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                calculator.appendNumber(button.innerText);
+            });
+        });
+        
+        operationButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                calculator.chooseOperation(button.innerText);
+            });
+        });
+        
+        equalsButton.addEventListener('click', () => {
+            calculator.compute();
+        });
+        
+        clearButton.addEventListener('click', () => {
+            calculator.clear();
+        });
+        
+        deleteButton.addEventListener('click', () => {
+            calculator.delete();
+        });
+        
+        percentageButton.addEventListener('click', () => {
+            calculator.percentage();
+        });
+        
+        // Adicionando suporte para teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.key >= 0 && e.key <= 9) {
+                calculator.appendNumber(e.key);
+            } else if (e.key === '.') {
+                calculator.appendNumber('.');
+            } else if (e.key === '+' || e.key === '-' || e.key === '*' || e.key === '/') {
+                calculator.chooseOperation(e.key);
+            } else if (e.key === '%') {
+                calculator.percentage();
+            } else if (e.key === 'Enter' || e.key === '=') {
+                calculator.compute();
+            } else if (e.key === 'Backspace') {
+                calculator.delete();
+            } else if (e.key === 'Escape') {
+                calculator.clear();
+            }
+        });
+    </script>
+</body>
 </html>
